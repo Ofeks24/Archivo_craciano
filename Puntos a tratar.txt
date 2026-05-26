@@ -1,0 +1,50 @@
+BLOQUE A — Sistemas de Gestión Empresarial
+1. Ollama + Modelos de IA
+
+Se usan dos modelos locales vía Ollama: nomic-embed-text:v1.5 para embeddings (768 dimensiones) y qwen2.5:3b-instruct para generación de texto
+La elección es local por privacidad, latencia y coste cero por token
+qwen2.5:3b fue elegido por su buen rendimiento en español y bajo consumo (~2 GB VRAM)
+
+2. Entrenamiento de IA
+
+No hay fine-tuning clásico; el "entrenamiento" consiste en indexar documentos del usuario en ChromaDB
+El diferencial antes/después es claro: sin indexar el sistema no sabe nada, tras indexar responde con detalle
+Soporta reanudación: omite documentos ya procesados en rituales anteriores
+
+3. MCP — MiniSaaS
+
+El usuario pregunta en lenguaje natural → la IA lo convierte en vector → ChromaDB devuelve fragmentos → la IA los reescribe en texto legible
+Dos endpoints REST: /api/embed (vectorización) y /api/chat (RAG + generación)
+El panel de administración actúa como CMS que alimenta el servicio
+
+4. IA Agéntica
+
+procesar_entrenamiento es el agente: recibe la misión, itera documentos, gestiona errores, persiste progreso y se reanuda sin intervención humana
+Selecciona automáticamente el lector correcto según el formato del archivo
+Memoria de estado en SQLite; memoria de conocimiento en ChromaDB
+
+
+BLOQUE B — Programación de Servicios y Procesos
+5. RAG puro
+
+Chunks de 1.200 caracteres con 200 de solape, respetando límites de párrafo
+ChromaDB PersistentClient con colecciones independientes por entrenamiento (UUID)
+La query devuelve los 5 fragmentos más cercanos por distancia coseno, con trazabilidad completa
+
+6. RAG + IA
+
+Los chunks crudos se pasan a qwen2.5 con un prompt que obliga a responder solo desde el contexto
+Evita alucinaciones sin sacrificar calidad narrativa
+El pipeline encadena SQLite → ChromaDB → Ollama en un solo endpoint
+
+7. RAG Empaquetado (Flask)
+
+Flujo en 4 pasos: subir documentos → indexar → buscar → chatear
+Stack: Flask + Jinja2 + SQLite + ChromaDB + Werkzeug (auth)
+Herencia de plantillas con base.html; archivos subidos con nombre UUID para evitar colisiones
+
+8. CSS 3D
+
+Esfera de 768 puntos distribuidos con algoritmo de Fibonacci Sphere, sin WebGL
+Al escribir, los puntos se reescalan según los valores del embedding real, visualizando el espacio semántico
+Animación con requestAnimationFrame y lerp (factor 0.07); profundidad simulada con opacidad por posición Z

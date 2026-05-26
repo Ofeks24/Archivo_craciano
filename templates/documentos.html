@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<article>
+  <h2>📜 Añadir Manuscrito al Archivo</h2>
+
+  <p style="margin-bottom:20px; font-style:italic; color:var(--texto-suave);">
+    Deposita un tomo, grimorio o manuscrito en el Archivo. Los custodios podrán 
+    clasificarlo y extraer su conocimiento arcano mediante el ritual de indexación.
+  </p>
+
+  <form method="post" enctype="multipart/form-data">
+    <input type="file" name="archivo">
+    <textarea name="notas" placeholder="Observaciones del escriba sobre este manuscrito..."></textarea>
+    <button>⸻ Depositar en el Archivo ⸻</button>
+  </form>
+
+  <p class="pequeno" style="margin-top:12px;">
+    ✦ En esta edición del Archivo se recomiendan manuscritos en formato .txt o .md. 
+    También se aceptan pergaminos .pdf, .docx y .odt.
+  </p>
+</article>
+
+<article>
+  <h2>📚 Tomos Custodiados</h2>
+
+  {% if docs %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Título del Manuscrito</th>
+        <th>Estado Arcano</th>
+        <th>Fecha de Depósito</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for doc in docs %}
+      <tr>
+        <td style="color:var(--texto-suave); font-size:13px;">{{ doc.id }}</td>
+        <td style="color:var(--oro-suave);">{{ doc.nombre_original }}</td>
+        <td>
+          <span class="estado {{ doc.estado|lower }}">
+            {% if doc.estado == 'SUBIDO' %}CONSERVADO
+            {% elif doc.estado == 'INDEXADO' %}CATALOGADO
+            {% elif doc.estado == 'ERROR' %}CORROMPIDO
+            {% else %}{{ doc.estado }}{% endif %}
+          </span>
+        </td>
+        <td style="font-size:14px; color:var(--texto-suave);">{{ doc.creado_en[:10] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p style="font-style:italic; color:var(--texto-suave); text-align:center; padding:20px 0;">
+      Ningún manuscrito ha sido depositado aún. El Archivo aguarda sus primeros tomos.
+    </p>
+  {% endif %}
+</article>
+
+{% endblock %}

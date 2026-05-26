@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<article>
+  <h2>⚜ Cámara del Archivo</h2>
+
+  <div class="grid">
+    <div class="dato">
+      <strong>{{ documentos }}</strong>
+      <span>Tomos Catalogados</span>
+    </div>
+
+    <div class="dato">
+      <strong>{{ entrenamientos }}</strong>
+      <span>Ritualizaciones</span>
+    </div>
+
+    <div class="dato">
+      <strong>{{ progreso }}%</strong>
+      <span>Estado del Archivo</span>
+    </div>
+  </div>
+</article>
+
+<article>
+  <h2>🜏 Estado de la Memoria Etérea</h2>
+
+  {% if ultimo %}
+    <p style="margin-bottom:14px;">
+      Última ritualizacion: <strong style="color:var(--oro-suave);">{{ ultimo.nombre }}</strong>
+    </p>
+
+    <div class="barra">
+      <div class="progreso" style="width: {{ ultimo.progreso }}%;"></div>
+    </div>
+
+    <p class="pequeno" style="margin-top:10px;">
+      {{ ultimo.progreso }}% de los manuscritos han sido integrados en la memoria arcana.
+    </p>
+
+    {% if ultimo.progreso == 100 %}
+      <p style="margin-top:16px; color: #8ecc9a; font-style:italic;">
+        ✦ El Archivo permanece estable. El Oráculo puede ser consultado.
+      </p>
+    {% else %}
+      <p style="margin-top:16px; color:var(--pergamino-o); font-style:italic;">
+        🜏 La ritualizacion está en curso. Aguarda a que los fragmentos sean absorbidos.
+      </p>
+    {% endif %}
+  {% else %}
+    <p style="font-style:italic; color:var(--texto-suave);">
+      El Archivo aún está vacío. Deposita manuscritos y lanza la primera ritualizacion para despertar la memoria arcana.
+    </p>
+  {% endif %}
+</article>
+
+{% endblock %}

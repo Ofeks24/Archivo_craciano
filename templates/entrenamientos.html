@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<article>
+  <h2>🜏 Ritual de Indexación</h2>
+
+  <p style="margin-bottom:16px;">
+    Al invocar este ritual, el Archivo fragmentará los manuscritos custodiados, extraerá 
+    sus <em>resonancias arcanas</em> y las integrará en la memoria etérea. 
+    Una vez completado, el Oráculo podrá responder consultas sobre su contenido.
+  </p>
+
+  <p style="color:var(--texto-suave); font-style:italic; margin-bottom:24px; font-size:15px;">
+    ⚠ Iniciar un nuevo ritual creará una nueva cámara de conocimiento. 
+    Si deseas continuar absorbiendo manuscritos no procesados, usa "Reanudar Ritual".
+  </p>
+
+  <div class="acciones">
+    <form method="post" action="/entrenamientos/iniciar">
+      <button>⸻ Iniciar Nuevo Ritual ⸻</button>
+    </form>
+
+    <form method="post" action="/entrenamientos/continuar">
+      <button class="secundario">🜏 Reanudar el Ritual</button>
+    </form>
+  </div>
+</article>
+
+<article>
+  <h2>◉ Progreso de la Ritualizacion</h2>
+
+  {% if entrenamientos %}
+    {% set e = entrenamientos[0] %}
+
+    <h3 style="margin-bottom:16px;">{{ e.nombre }}</h3>
+
+    <div class="barra">
+      <div class="progreso" style="width: {{ e.progreso }}%;"></div>
+    </div>
+
+    <p style="margin-top:12px;">
+      <strong style="color:var(--oro);">{{ e.progreso }}%</strong> 
+      — {{ e.documentos_procesados }} de {{ e.documentos_total }} manuscritos absorbidos.
+    </p>
+
+    <p class="pequeno" style="margin-top:8px;">
+      Fragmentos arcanos generados: <strong style="color:var(--oro-suave);">{{ e.chunks_total }}</strong>
+    </p>
+  {% else %}
+    <p style="font-style:italic; color:var(--texto-suave); text-align:center; padding:20px 0;">
+      No hay ningún ritual activo. Deposita manuscritos e invoca el primer ritual.
+    </p>
+  {% endif %}
+</article>
+
+<article>
+  <h2>📋 Historial de Ritualizaciones</h2>
+
+  {% if entrenamientos %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nombre del Ritual</th>
+        <th>Estado</th>
+        <th>Avance</th>
+        <th>Fragmentos</th>
+        <th>Fecha de Invocación</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for e in entrenamientos %}
+      <tr>
+        <td style="color:var(--texto-suave); font-size:13px;">{{ e.id }}</td>
+        <td style="color:var(--oro-suave);">{{ e.nombre }}</td>
+        <td>
+          <span class="estado {{ e.estado|lower }}">
+            {% if e.estado == 'COMPLETADO' %}SELLADO
+            {% elif e.estado == 'PROCESANDO' %}EN RITUAL
+            {% elif e.estado == 'SIN_DOCUMENTOS' %}SIN TOMOS
+            {% else %}{{ e.estado }}{% endif %}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="barra" style="width:70px; height:5px; margin:0;">
+              <div class="progreso" style="width:{{ e.progreso }}%;"></div>
+            </div>
+            <span style="font-size:13px; color:var(--texto-suave);">{{ e.progreso }}%</span>
+          </div>
+        </td>
+        <td style="color:var(--pergamino-o);">{{ e.chunks_total }}</td>
+        <td style="font-size:14px; color:var(--texto-suave);">{{ e.creado_en[:10] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p style="font-style:italic; color:var(--texto-suave); text-align:center; padding:20px 0;">
+      Ninguna ritualizacion ha sido llevada a cabo todavía.
+    </p>
+  {% endif %}
+</article>
+
+{% endblock %}

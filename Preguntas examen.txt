@@ -1,0 +1,23 @@
+Repaso de las preguntas del examen:
+
+Sistemas de gestión empresarial:
+Ollama + Modelos ollama - En esta pregunta deberéis haber creado un programa informático que use un modelo preestablecido de inteligencia artificial, local o remota - deberéis poder justificar qué modelo habéis utilizado y por qué, en términos de potencia, rapidez, consumo de memoria, generación, etc
+Entrenamiento de IA - Debéis demostrar, mediante un programa informático, que sois capaces de, mediante parejas de pregunta y respuesta en JSON, entrenar aunque sea mínimamente a una IA, y notar un diferencial entre las respuestas antes y despues del entrenamiento
+MCP - concepto de conexión de IA a aplicaciones (MUY IMPORTANTE ESTE EJERCICIO) - Desarrollar un programa informático, un MiniSaaS, que 1.-permita al usuario formular una pregunta en formato humano, y la IA lo transforma a formato petición - 2.-el SaaS devuelve información, y la IA lo interpreta
+IA agentica (IA que se comporta de forma independiente) - Proyecto de software en el que desarrolléis una IA no conversacional e independiente: le encomiendas una misión y la IA se esfuerza por cumplirla de forma autonoma
+
+
+
+Programación de servicios y procesos:
+RAG - En este ejercicio se pretende que demostréis que podéis obtener embeddings sobre grandes bloques de texto, meterlos en una base de datos ChromaDB, y realizar queries sobre esa base de datos vectorial. La base de datos os deberá devolver como resultado los "cachos" (chunks) que mas similitud semántica tengan con vuestra pregunta
+RAG + IA - El resultado de un RAG da cachos crudos (raw chunks) - pero al usuario humano final no le puedes dar los cachos crudos - pasáis los cachos a un modelo de IA, para que la IA los convierta en texto normal, humano, entendible
+RAG empaquetado -  de lo que se trata en este ejercicio es de hacer una interfaz flask, para que cualquier usuario de la calle pueda entrenar su propio RAG
+CSS3D - Hacer algo interesante con lo que estuvimos viendo en clase con respecto a la creación de entornos y espacios 3D - si es posible, que tenga algo que ver con IA y con RAG
+
+En el examen:
+PARA CADA PREGUNTA
+Creais un texto, de entre 4 y 6 párrafos, hablando del proyecto
+1 párrafo para la introduccion
+2 párrafos para como se usa el programa
+2 párrafos para las tecnologías que habéis usado
+1 párrafo para el cierre

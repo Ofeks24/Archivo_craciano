@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<article>
+  <h2>⚙ Registros del Archivo</h2>
+
+  <p style="margin-bottom:20px; font-style:italic; color:var(--texto-suave);">
+    Cada entrada registra cómo un manuscrito fue fragmentado y sellado dentro de una cámara 
+    de conocimiento durante una ritualizacion. Estos fragmentos forman la memoria del Oráculo.
+  </p>
+
+  {% if filas %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Ritualizacion</th>
+        <th>Manuscrito</th>
+        <th>Fragmentos</th>
+        <th>Estado</th>
+        <th>Cámara Arcana</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for fila in filas %}
+      <tr>
+        <td style="color:var(--texto-suave); font-size:13px;">{{ fila.id }}</td>
+        <td style="color:var(--pergamino-o); font-size:14px;">{{ fila.entrenamiento }}</td>
+        <td style="color:var(--oro-suave);">{{ fila.nombre_original }}</td>
+        <td style="color:var(--texto);">{{ fila.chunks }}</td>
+        <td>
+          <span class="estado {{ fila.estado|lower }}">
+            {% if fila.estado == 'COMPLETADA' %}SELLADO
+            {% elif fila.estado == 'ERROR' %}CORROMPIDO
+            {% else %}{{ fila.estado }}{% endif %}
+          </span>
+        </td>
+        <td style="font-family:monospace; font-size:12px; color:var(--texto-suave); word-break:break-all;">
+          {{ fila.coleccion_chroma }}
+        </td>
+        <td style="font-size:14px; color:var(--texto-suave);">{{ fila.creado_en[:10] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p style="font-style:italic; color:var(--texto-suave); text-align:center; padding:20px 0;">
+      El Archivo no contiene ningún registro de indexación. Invoca el Ritual para comenzar.
+    </p>
+  {% endif %}
+</article>
+
+{% endblock %}

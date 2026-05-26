@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ app_name }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --negro:      #07050300;
+  --fondo:      #0a0703;
+  --oro:        #c9a84c;
+  --oro-claro:  #e8d07a;
+  --oro-suave:  #f0e4b4;
+  --borde-oro:  #5a4020;
+  --texto:      #d4c49a;
+  --texto-s:    #8e7e5a;
+  --sangre:     #6b1c1c;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: "EB Garamond", Georgia, serif;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+/* ── STAGE ── */
+#stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(100,65,15,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at center, #0f0a06, #050302);
+  perspective: 950px;
+  perspective-origin: center center;
+  cursor: grab;
+}
+
+#stage:active { cursor: grabbing; }
+
+/* Vignette */
+#stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.88) 100%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Grain */
+#stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0.7;
+}
+
+#world {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 0; height: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.cell {
+  position: absolute;
+  width: 24px; height: 24px;
+  margin-left: -12px; margin-top: -12px;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.circle {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #e8d07a, #6b4f1a);
+  box-shadow:
+    0 0 6px rgba(201,168,76,0.7),
+    0 0 14px rgba(201,168,76,0.3),
+    0 0 28px rgba(100,65,15,0.2);
+  transform: scale(1);
+  transition: transform 0.55s cubic-bezier(.34,1.56,.64,1);
+  will-change: transform;
+}
+
+/* ── TITLE ── */
+#title {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  text-align: center;
+  pointer-events: none;
+}
+
+#title h1 {
+  font-family: "Cinzel Decorative", serif;
+  font-size: clamp(14px, 2.2vw, 22px);
+  font-weight: 700;
+  color: var(--oro);
+  letter-spacing: 3px;
+  text-shadow:
+    0 0 20px rgba(201,168,76,0.6),
+    0 0 50px rgba(201,168,76,0.2);
+  white-space: nowrap;
+}
+
+#title p {
+  font-family: "EB Garamond", serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--texto-s);
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+/* ── ADMIN LINK ── */
+#admin-link {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 50;
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--texto-s);
+  text-decoration: none;
+  padding: 9px 16px;
+  border: 1px solid var(--borde-oro);
+  border-radius: 2px;
+  background: rgba(10,7,3,0.8);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s;
+}
+
+#admin-link:hover {
+  color: var(--oro);
+  border-color: var(--oro);
+  box-shadow: 0 0 15px rgba(201,168,76,0.2);
+}
+
+/* ── RESULT WINDOW ── */
+#result-window {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: min(760px, calc(100vw - 48px));
+  max-height: 44vh;
+  padding: 28px 32px;
+  border-radius: 2px;
+  background: rgba(10,7,4,0.92);
+  border: 1px solid var(--borde-oro);
+  box-shadow:
+    0 0 60px rgba(0,0,0,0.8),
+    0 0 30px rgba(201,168,76,0.08),
+    inset 0 0 40px rgba(201,168,76,0.02);
+  backdrop-filter: blur(20px);
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  overflow-y: auto;
+  transition:
+    opacity 0.4s ease,
+    max-height 0.5s ease,
+    padding 0.5s ease;
+}
+
+#result-window::before {
+  content: "◈";
+  position: absolute;
+  top: 10px; left: 12px;
+  color: var(--borde-oro);
+  font-size: 14px;
+  line-height: 1;
+}
+
+#result-window::after {
+  content: "◈";
+  position: absolute;
+  bottom: 10px; right: 12px;
+  color: var(--borde-oro);
+  font-size: 14px;
+  line-height: 1;
+}
+
+#result-window.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#result-window.loading {
+  min-width: 220px;
+  width: auto;
+  max-height: 80px;
+  padding: 18px 26px;
+  overflow: hidden;
+}
+
+#result-window.expanded {
+  min-height: 120px;
+  max-height: 52vh;
+  padding: 32px 36px;
+}
+
+#result-content {
+  font-size: 18px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  text-align: justify;
+  color: var(--texto);
+  font-family: "EB Garamond", serif;
+}
+
+/* ── LOADING ── */
+.loading-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--texto-s);
+  white-space: nowrap;
+}
+
+.spinner {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(201,168,76,0.2);
+  border-top-color: var(--oro);
+  animation: spin 0.9s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── CURSOR ── */
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--oro);
+  vertical-align: middle;
+  animation: blink 0.9s infinite;
+  margin-left: 2px;
+  box-shadow: 0 0 8px rgba(201,168,76,0.6);
+}
+
+@keyframes blink {
+  0%, 45%  { opacity: 1; }
+  46%, 100% { opacity: 0; }
+}
+
+/* ── INPUT PANEL ── */
+#input-panel {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  width: min(740px, calc(100vw - 48px));
+  z-index: 40;
+}
+
+#input-box {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 2px;
+  background: rgba(8,5,3,0.92);
+  border: 1px solid var(--borde-oro);
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.7),
+    0 0 25px rgba(201,168,76,0.06);
+}
+
+#texto {
+  flex: 1;
+  border: 1px solid rgba(90,64,32,0.6);
+  border-radius: 1px;
+  outline: none;
+  padding: 14px 18px;
+  font-size: 17px;
+  font-family: "EB Garamond", serif;
+  background: rgba(5,3,2,0.8);
+  color: var(--texto);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+#texto::placeholder {
+  color: var(--texto-s);
+  font-style: italic;
+}
+
+#texto:focus {
+  border-color: var(--borde-oro);
+  box-shadow: 0 0 12px rgba(201,168,76,0.12);
+}
+
+#boton {
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: 1px solid var(--borde-oro);
+  border-radius: 1px;
+  padding: 0 22px;
+  background: linear-gradient(180deg, #3d2a10 0%, #22170a 100%);
+  color: var(--oro-suave);
+  cursor: pointer;
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+
+#boton:hover {
+  border-color: var(--oro);
+  color: var(--oro-claro);
+  box-shadow: 0 0 20px rgba(201,168,76,0.2);
+}
+
+#boton:disabled, #texto:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#info {
+  margin-top: 10px;
+  text-align: center;
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--texto-s);
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--borde-oro); border-radius: 2px; }
+
+/* ── SELECTION ── */
+::selection { background: rgba(201,168,76,0.25); color: var(--oro-claro); }
+
+/* ── MOBILE ── */
+@media (max-width: 600px) {
+  #input-box { flex-direction: column; }
+  #boton { padding: 14px; }
+  #result-content { font-size: 16px; }
+  #title h1 { font-size: 14px; }
+}
+</style>
+</head>
+
+<body>
+
+<a id="admin-link" href="/login">⚜ Custodios</a>
+
+<div id="stage">
+  <div id="world"></div>
+</div>
+
+<div id="title">
+  <h1>{{ app_name }}</h1>
+  <p>Oráculo de la Biblioteca Arcana</p>
+</div>
+
+<div id="result-window">
+  <div id="result-content"></div>
+</div>
+
+<div id="input-panel">
+  <div id="input-box">
+    <input id="texto" autocomplete="off" placeholder="Formula tu consulta al Archivo… ¿Qué conocimiento arcano buscas?">
+    <button id="boton" onclick="consultar()">Invocar</button>
+  </div>
+  <div id="info">Escribe y pulsa espacio para despertar las runas · Enter para invocar</div>
+</div>
+
+<script>
+const stage       = document.getElementById("stage");
+const world       = document.getElementById("world");
+const resultWin   = document.getElementById("result-window");
+const resultCont  = document.getElementById("result-content");
+const boton       = document.getElementById("boton");
+const inputTexto  = document.getElementById("texto");
+const info        = document.getElementById("info");
+
+const INTENSITY       = 8;
+const INITIAL_NEURONS = 768;
+
+let writingTimer = null;
+let cameraZ = 0, rotationX = -12, rotationY = 0;
+let targetRotX = rotationX, targetRotY = rotationY;
+let dragging = false, lastMX = 0, lastMY = 0;
+let previewTimer = null, lastPreviewText = "", previewBusy = false, pendingPreview = false;
+
+// ─── SPHERE GEOMETRY ───
+
+function fibonacciSphere(count, radius) {
+  const pts = [], phi = Math.PI * (3 - Math.sqrt(5));
+  if (count <= 1) return [{ x:0, y:0, z:0 }];
+  for (let i = 0; i < count; i++) {
+    const y = 1 - (i / (count - 1)) * 2;
+    const r = Math.sqrt(1 - y * y);
+    const t = phi * i;
+    pts.push({ x: Math.cos(t)*r*radius, y: y*radius, z: Math.sin(t)*r*radius });
+  }
+  return pts;
+}
+
+function getRadius() {
+  return Math.min(window.innerWidth, window.innerHeight) * 0.32;
+}
+
+function applyCamera() {
+  world.style.transform = `translateZ(${cameraZ}px) rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+}
+
+function rotatePoint(x, y, z) {
+  const rx = rotationX * Math.PI / 180, ry = rotationY * Math.PI / 180;
+  const cy = Math.cos(ry), sy = Math.sin(ry);
+  const x1 = x*cy + z*sy, y1 = y, z1 = -x*sy + z*cy;
+  const cx = Math.cos(rx), sx = Math.sin(rx);
+  return { x: x1, y: y1*cx - z1*sx, z: y1*sx + z1*cx };
+}
+
+function updateBillboards() {
+  const radius = getRadius();
+  document.querySelectorAll(".cell").forEach(cell => {
+    const x = +cell.dataset.x, y = +cell.dataset.y, z = +cell.dataset.z;
+    const rot = rotatePoint(x, y, z);
+    let depth = Math.max(0, Math.min(1, (rot.z + radius) / (radius * 2)));
+    cell.style.transform = `translate3d(${x}px,${y}px,${z}px) rotateY(${-rotationY}deg) rotateX(${-rotationX}deg)`;
+    cell.style.opacity = String(0.1 + depth * 0.9);
+    cell.style.zIndex  = String(Math.round(depth * 100000));
+  });
+}
+
+function animate() {
+  rotationX += (targetRotX - rotationX) * 0.07;
+  rotationY += (targetRotY - rotationY) * 0.07;
+  if (!dragging) targetRotY += 0.07;
+  applyCamera();
+  updateBillboards();
+  requestAnimationFrame(animate);
+}
+
+// ─── NEURON INIT ───
+
+function crearNeuronasIniciales(total) {
+  world.innerHTML = "";
+  const pts = fibonacciSphere(total, getRadius());
+  pts.forEach((pos, i) => {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.dataset.x = String(pos.x);
+    cell.dataset.y = String(pos.y);
+    cell.dataset.z = String(pos.z);
+    const circle = document.createElement("div");
+    circle.className = "circle";
+    circle.dataset.index = String(i);
+    circle.style.transform = "scale(1)";
+    cell.appendChild(circle);
+    world.appendChild(cell);
+  });
+  updateBillboards();
+}
+
+function recolocar(total) {
+  const pts = fibonacciSphere(total, getRadius());
+  pts.forEach((pos, i) => {
+    const c = document.querySelector(`.circle[data-index="${i}"]`);
+    if (!c) return;
+    c.parentElement.dataset.x = String(pos.x);
+    c.parentElement.dataset.y = String(pos.y);
+    c.parentElement.dataset.z = String(pos.z);
+  });
+  updateBillboards();
+}
+
+function pintarEmbedding(values) {
+  const pts = fibonacciSphere(values.length, getRadius());
+  values.forEach((value, i) => {
+    let circle = document.querySelector(`.circle[data-index="${i}"]`);
+    if (!circle) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      circle = document.createElement("div");
+      circle.className = "circle";
+      circle.dataset.index = String(i);
+      cell.appendChild(circle);
+      world.appendChild(cell);
+    }
+    const pos = pts[i];
+    const cell = circle.parentElement;
+    cell.dataset.x = String(pos.x);
+    cell.dataset.y = String(pos.y);
+    cell.dataset.z = String(pos.z);
+    const amp = Math.max(-1, Math.min(1, value * INTENSITY));
+    const norm = (amp + 1) / 2;
+    const scale = 0.35 + Math.pow(norm, 1.8) * 2.4;
+    circle.style.transitionDelay = `${Math.min(i * 2, 600)}ms`;
+    circle.style.transform = `scale(${scale})`;
+  });
+  document.querySelectorAll(".circle").forEach(c => {
+    if (Number(c.dataset.index || 0) >= values.length) c.parentElement?.remove();
+  });
+  updateBillboards();
+}
+
+// ─── RESULT WINDOW ───
+
+function ocultarResultado() {
+  if (writingTimer) { clearInterval(writingTimer); writingTimer = null; }
+  resultWin.classList.remove("visible", "loading", "expanded");
+  resultCont.innerHTML = "";
+}
+
+function mostrarCargando() {
+  if (writingTimer) { clearInterval(writingTimer); writingTimer = null; }
+  resultWin.classList.remove("expanded");
+  resultWin.classList.add("visible", "loading");
+  resultCont.innerHTML = `
+    <div class="loading-row">
+      <div class="spinner"></div>
+      <div>El Oráculo consulta el Archivo…</div>
+    </div>`;
+}
+
+function escribirRespuesta(texto) {
+  if (writingTimer) { clearInterval(writingTimer); writingTimer = null; }
+  resultWin.classList.remove("loading");
+  resultWin.classList.add("visible", "expanded");
+  resultCont.innerHTML = "";
+  const content = document.createElement("span");
+  const cursor  = document.createElement("span");
+  cursor.className = "cursor";
+  resultCont.appendChild(content);
+  resultCont.appendChild(cursor);
+  let i = 0;
+  writingTimer = setInterval(() => {
+    if (i >= texto.length) {
+      clearInterval(writingTimer); writingTimer = null;
+      cursor.remove(); return;
+    }
+    content.textContent += texto.slice(i, i + 2);
+    i += 2;
+    resultWin.scrollTop = resultWin.scrollHeight;
+  }, 12);
+}
+
+// ─── API ───
+
+async function obtenerEmbedding(texto) {
+  const r = await fetch("/api/embed", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ texto })
+  });
+  const d = await r.json();
+  if (d.status !== "ok" || !Array.isArray(d.embedding)) throw new Error(d.message || "embedding inválido");
+  return d.embedding;
+}
+
+async function previsualizarEmbedding() {
+  const texto = inputTexto.value.trim();
+  if (!texto || texto === lastPreviewText) return;
+  if (previewBusy) { pendingPreview = true; return; }
+  previewBusy = true; pendingPreview = false; lastPreviewText = texto;
+  info.textContent = `Despertando runas para: "${texto}"…`;
+  try {
+    const values = await obtenerEmbedding(texto);
+    pintarEmbedding(values);
+    info.textContent = `"${texto}" · ${values.length} resonancias · runas actualizadas`;
+  } catch (e) {
+    info.textContent = "Error al despertar runas: " + e.message;
+  } finally {
+    previewBusy = false;
+    if (pendingPreview && inputTexto.value.trim() !== lastPreviewText) previsualizarEmbedding();
+  }
+}
+
+function programarPreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(previsualizarEmbedding, 120);
+}
+
+async function consultar() {
+  const texto = inputTexto.value.trim();
+  if (!texto) return;
+  clearTimeout(previewTimer);
+  boton.disabled = true;
+  inputTexto.disabled = true;
+  info.textContent = "Extrayendo resonancias arcanas…";
+  mostrarCargando();
+  try {
+    const values = await obtenerEmbedding(texto);
+    pintarEmbedding(values);
+    lastPreviewText = texto;
+    info.textContent = `"${texto}" · invocando el Oráculo…`;
+    const r = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ consulta: texto })
+    });
+    const d = await r.json();
+    info.textContent = `El Oráculo ha respondido ✦`;
+    escribirRespuesta(d.respuesta || "El Oráculo guarda silencio.");
+  } catch (e) {
+    info.textContent = "Error invocando al Oráculo: " + e.message;
+    escribirRespuesta("El Archivo no puede ser consultado en este momento: " + e.message);
+  } finally {
+    boton.disabled = false;
+    inputTexto.disabled = false;
+    inputTexto.focus();
+  }
+}
+
+// ─── EVENTS ───
+
+stage.addEventListener("wheel", e => {
+  e.preventDefault();
+  cameraZ = Math.max(-650, Math.min(850, cameraZ + e.deltaY * -0.6));
+  applyCamera(); updateBillboards();
+}, { passive: false });
+
+stage.addEventListener("mousedown", e => { dragging = true; lastMX = e.clientX; lastMY = e.clientY; });
+window.addEventListener("mouseup", () => { dragging = false; });
+window.addEventListener("mousemove", e => {
+  if (!dragging) return;
+  targetRotY += (e.clientX - lastMX) * 0.35;
+  targetRotX -= (e.clientY - lastMY) * 0.35;
+  targetRotX = Math.max(-80, Math.min(80, targetRotX));
+  lastMX = e.clientX; lastMY = e.clientY;
+});
+
+window.addEventListener("resize", () => recolocar(document.querySelectorAll(".circle").length));
+
+inputTexto.addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); consultar(); return; }
+  if (e.key === " ") programarPreview();
+});
+
+inputTexto.addEventListener("input", () => {
+  ocultarResultado();
+  clearTimeout(previewTimer);
+  if (inputTexto.value.endsWith(" ")) programarPreview();
+});
+
+crearNeuronasIniciales(INITIAL_NEURONS);
+applyCamera();
+animate();
+inputTexto.focus();
+</script>
+
+</body>
+</html>
